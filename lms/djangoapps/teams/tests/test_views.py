@@ -957,7 +957,7 @@ class TestUpdateTeamAPI(EventTestMixin, TeamAPITestCase):
         if hasattr(self.solar_team, key):
             prev_value = getattr(self.solar_team, key)
 
-        self.patch_team_detail(self.solar_team.team_id, 200, {key: value}, user='staff')
+        self.patch_team_detail(self.solar_team.team_id, 200, {key: value}, user='staff')g
 
         if hasattr(self.solar_team, key):
             self.assert_event_emitted(
