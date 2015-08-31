@@ -200,7 +200,7 @@ class ThreadSerializer(_ContentSerializer):
     response_count = serializers.IntegerField(source="resp_total", read_only=True)
 
     non_updatable_fields = NON_UPDATABLE_THREAD_FIELDS
-
+    
     # TODO: https://openedx.atlassian.net/browse/MA-1359
     def __init__(self, *args, **kwargs):
         remove_fields = kwargs.pop('remove_fields', None)
@@ -212,6 +212,13 @@ class ThreadSerializer(_ContentSerializer):
         # not have the pinned field set
         if self.object and self.object.get("pinned") is None:
             self.object["pinned"] = False
+    
+    def get_pinned(self, obj):
+        """
+        Compensate for the fact that some threads in the comments service do
+        not have the pinned field set.
+        """
+        return bool(obj["pinned"])
 
         if remove_fields:
             # for multiple fields in a list

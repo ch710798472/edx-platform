@@ -1880,7 +1880,6 @@ INSTALLED_APPS = (
     'provider',
     'provider.oauth2',
     'oauth2_provider',
-
     'third_party_auth',
 
     # We don't use this directly (since we use OAuth2), but we need to install it anyway.
