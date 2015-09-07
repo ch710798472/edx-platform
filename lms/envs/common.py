@@ -1843,6 +1843,7 @@ INSTALLED_APPS = (
     # For asset pipelining
     'edxmako',
     'pipeline',
+    'django.contrib.staticfiles',
     'static_replace',
 
     # Theming
