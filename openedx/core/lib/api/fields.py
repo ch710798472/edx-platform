@@ -8,14 +8,12 @@ class ExpandableField(Field):
     Kwargs:
       collapsed_serializer (Serializer): the serializer to use for a non-expanded representation.
       expanded_serializer (Serializer): the serializer to use for an expanded representation.
-      exclude_expand_fields (set(str)): a set of fields which will not be expanded by sub-serializers.
     """
     def __init__(self, **kwargs):
         """Sets up the ExpandableField with the collapsed and expanded versions of the serializer."""
         assert 'collapsed_serializer' in kwargs and 'expanded_serializer' in kwargs
         self.collapsed = kwargs.pop('collapsed_serializer')
         self.expanded = kwargs.pop('expanded_serializer')
-        self.exclude_expand_fields = kwargs.pop('exclude_expand_fields', set())
         super(ExpandableField, self).__init__(**kwargs)
 
     def to_representation(self, obj):
