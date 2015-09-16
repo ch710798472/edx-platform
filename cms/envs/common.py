@@ -410,6 +410,7 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 SESSION_COOKIE_SECURE = False
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SAVE_EVERY_REQUEST = False
 
 # Site info
 SITE_ID = 1
