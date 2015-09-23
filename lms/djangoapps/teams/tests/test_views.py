@@ -1,32 +1,31 @@
 # -*- coding: utf-8 -*-
 """Tests for the teams API at the HTTP request level."""
 import json
-import pytz
 from datetime import datetime
+
+import pytz
 from dateutil import parser
 import ddt
 from elasticsearch.exceptions import ConnectionError
 from mock import patch
 from search.search_engine_base import SearchEngine
-
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.utils import translation
 from nose.plugins.attrib import attr
 from rest_framework.test import APITestCase, APIClient
+from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
+from xmodule.modulestore.tests.factories import CourseFactory
 
 from courseware.tests.factories import StaffFactory
 from common.test.utils import skip_signal
 from student.tests.factories import UserFactory, AdminFactory, CourseEnrollmentFactory
 from student.models import CourseEnrollment
 from util.testing import EventTestMixin
-from xmodule.modulestore.tests.django_utils import SharedModuleStoreTestCase
-from xmodule.modulestore.tests.factories import CourseFactory
 from .factories import CourseTeamFactory, LAST_ACTIVITY_AT
 from ..models import CourseTeam, CourseTeamMembership
 from ..search_indexes import CourseTeamIndexer, course_team_post_save_callback
-
 from django_comment_common.models import Role, FORUM_ROLE_COMMUNITY_TA
 from django_comment_common.utils import seed_permissions_roles
 
@@ -130,7 +129,7 @@ class TestDashboard(SharedModuleStoreTestCase):
         team.add_user(self.user)
 
         # Check the query count on the dashboard again
-        with self.assertNumQueries(21):
+        with self.assertNumQueries(19):
             self.client.get(self.teams_url)
 
     def test_bad_course_id(self):
@@ -957,7 +956,7 @@ class TestUpdateTeamAPI(EventTestMixin, TeamAPITestCase):
         if hasattr(self.solar_team, key):
             prev_value = getattr(self.solar_team, key)
 
-        self.patch_team_detail(self.solar_team.team_id, 200, {key: value}, user='staff')g
+        self.patch_team_detail(self.solar_team.team_id, 200, {key: value}, user='staff')
 
         if hasattr(self.solar_team, key):
             self.assert_event_emitted(
