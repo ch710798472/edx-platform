@@ -111,7 +111,7 @@ class GroupsMembers(generics.CreateAPIView, mixins.DestroyModelMixin):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         graph = facebook_graph_api()
         url = settings.FACEBOOK_API_VERSION + '/' + kwargs['group_id'] + "/members"
-        member_ids = serializer.data['member_ids'].split(',')
+        member_ids = serializer.object['member_ids'].split(',')
         response = {}
         for member_id in member_ids:
             try:

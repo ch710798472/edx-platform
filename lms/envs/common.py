@@ -1882,12 +1882,6 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'third_party_auth',
 
-    # We don't use this directly (since we use OAuth2), but we need to install it anyway.
-    # When a user is deleted, Django queries all tables with a FK to the auth_user table,
-    # and since django-rest-framework-oauth imports this, it will try to access tables
-    # defined by oauth_provider.  If those tables don't exist, an error can occur.
-    'oauth_provider',
-
     'auth_exchange',
 
     # For the wiki
@@ -2009,14 +2003,6 @@ MIGRATION_MODULES = {
 
 # Forwards-compatibility with Django 1.7
 CSRF_COOKIE_AGE = 60 * 60 * 24 * 7 * 52
-
-
-######################### Django Rest Framework ########################
-
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'openedx.core.lib.api.paginators.DefaultPagination',
-    'PAGE_SIZE': 10,
-}
 
 
 ######################### MARKETING SITE ###############################
