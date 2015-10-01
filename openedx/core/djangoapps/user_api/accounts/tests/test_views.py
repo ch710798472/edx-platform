@@ -13,6 +13,7 @@ from django.core.urlresolvers import reverse
 from django.test.testcases import TransactionTestCase
 from django.test.utils import override_settings
 from rest_framework.test import APITestCase, APIClient
+from openedx.core.djangoapps.user_api.models import UserPreference
 
 from student.tests.factories import UserFactory
 from student.models import UserProfile, LanguageProficiency, PendingEmailChange
@@ -173,7 +174,7 @@ class TestAccountAPI(UserAPITestCase):
         Verify that all account fields are returned (even those that are not shareable).
         """
         data = response.data
-        self.assertEqual(15, len(data))
+        self.assertEqual(16, len(data))
         self.assertEqual(self.user.username, data["username"])
         self.assertEqual(self.user.first_name + " " + self.user.last_name, data["name"])
         self.assertEqual("US", data["country"])
@@ -189,6 +190,7 @@ class TestAccountAPI(UserAPITestCase):
         self._verify_profile_image_data(data, not requires_parental_consent)
         self.assertEquals(requires_parental_consent, data["requires_parental_consent"])
         self.assertEqual([{"code": "en"}], data["language_proficiencies"])
+        self.assertEqual(UserPreference.get_value(self.user, 'account_privacy'), data["account_privacy"])
 
     def test_anonymous_access(self):
         """
@@ -230,7 +232,8 @@ class TestAccountAPI(UserAPITestCase):
         """
         self.different_client.login(username=self.different_user.username, password=self.test_password)
         self.create_mock_profile(self.user)
-        response = self.send_get(self.different_client)
+        with self.assertNumQueries(9):
+            response = self.send_get(self.different_client)
         self._verify_full_shareable_account_response(response)
 
     # Note: using getattr so that the patching works even if there is no configuration.
@@ -244,7 +247,8 @@ class TestAccountAPI(UserAPITestCase):
         """
         self.different_client.login(username=self.different_user.username, password=self.test_password)
         self.create_mock_profile(self.user)
-        response = self.send_get(self.different_client)
+        with self.assertNumQueries(9):
+            response = self.send_get(self.different_client)
         self._verify_private_account_response(response)
 
     @ddt.data(
@@ -288,9 +292,10 @@ class TestAccountAPI(UserAPITestCase):
         as created by the test UserFactory).
         """
         def verify_get_own_information():
-            response = self.send_get(self.client)
+            with self.assertNumQueries(8):
+                response = self.send_get(self.client)
             data = response.data
-            self.assertEqual(15, len(data))
+            self.assertEqual(16, len(data))
             self.assertEqual(self.user.username, data["username"])
             self.assertEqual(self.user.first_name + " " + self.user.last_name, data["name"])
             for empty_field in ("year_of_birth", "level_of_education", "mailing_address", "bio"):
@@ -304,6 +309,7 @@ class TestAccountAPI(UserAPITestCase):
             self._verify_profile_image_data(data, False)
             self.assertTrue(data["requires_parental_consent"])
             self.assertEqual([], data["language_proficiencies"])
+            self.assertEqual(None, data["account_privacy"])
 
         self.client.login(username=self.user.username, password=self.test_password)
         verify_get_own_information()
@@ -325,7 +331,8 @@ class TestAccountAPI(UserAPITestCase):
         legacy_profile.save()
 
         self.client.login(username=self.user.username, password=self.test_password)
-        response = self.send_get(self.client)
+        with self.assertNumQueries(8):
+            response = self.send_get(self.client)
         for empty_field in ("level_of_education", "gender", "country", "bio"):
             self.assertIsNone(response.data[empty_field])
 
@@ -372,6 +379,7 @@ class TestAccountAPI(UserAPITestCase):
             "bio", u"<html>Lacrosse-playing superhero 壓是進界推日不復女</html>",
             "z" * 3001, u"Ensure this field has no more than 3000 characters."
         ),
+        ("account_privacy", ALL_USERS_VISIBILITY),
         # Note that email is tested below, as it is not immediately updated.
         # Note that language_proficiencies is tested below as there are multiple error and success conditions.
     )
@@ -396,8 +404,9 @@ class TestAccountAPI(UserAPITestCase):
                 ),
                 error_response.data["field_errors"][field]["developer_message"]
             )
-        else:
-            # If there are no values that would fail validation, then empty string should be supported.
+        elif field != "account_privacy":
+            # If there are no values that would fail validation, then empty string should be supported;
+            # except account_privacy that could not be empty string.
             response = self.send_patch(client, {field: ""})
             self.assertEqual("", response.data[field])
 
@@ -636,7 +645,7 @@ class TestAccountAPI(UserAPITestCase):
         response = self.send_get(client)
         if has_full_access:
             data = response.data
-            self.assertEqual(15, len(data))
+            self.assertEqual(16, len(data))
             self.assertEqual(self.user.username, data["username"])
             self.assertEqual(self.user.first_name + " " + self.user.last_name, data["name"])
             self.assertEqual(self.user.email, data["email"])
@@ -649,6 +658,7 @@ class TestAccountAPI(UserAPITestCase):
             self.assertIsNotNone(data["date_joined"])
             self._verify_profile_image_data(data, False)
             self.assertTrue(data["requires_parental_consent"])
+            self.assertEqual(ALL_USERS_VISIBILITY, data["account_privacy"])
         else:
             self._verify_private_account_response(response, requires_parental_consent=True)
 
