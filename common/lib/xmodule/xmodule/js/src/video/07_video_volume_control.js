@@ -133,8 +133,10 @@ function() {
 
         /** Bind any necessary function callbacks to DOM events. */
         bindHandlers: function() {
+            this.button.on({
+                'keydown': this.keyDownHandler
+            });
             this.state.el.on({
-                'keydown': this.keyDownHandler,
                 'play.volume': _.once(this.updateVolumeSilently),
                 'volumechange': this.onVolumeChangeHandler
             });

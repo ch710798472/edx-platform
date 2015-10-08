@@ -50,7 +50,7 @@ function (Sjson, AsyncProcess) {
                 '<div class="lang menu-container">',
                     '<button class="control language-menu" aria-disabled="false" aria-pressed="false">',
                         '<span class="icon-fallback-img">',
-                            '<span class="icon fa fa-caret-right" aria-hidden="true"></span>',
+                            '<span class="icon fa fa-caret-left" aria-hidden="true"></span>',
                             '<span class="sr control-text">',
                                 gettext('Open language menu'),
                             '</span>',
@@ -103,6 +103,7 @@ function (Sjson, AsyncProcess) {
             this.container = $(this.langTemplate);
             this.transcriptControlEl = this.container.find('.toggle-transcript');
             this.languageChooserEl = this.container.find('.lang');
+            this.menuChooserEl = this.languageChooserEl.parent();
 
             if (_.keys(languages).length) {
                 this.renderLanguageMenu(languages);
@@ -119,7 +120,7 @@ function (Sjson, AsyncProcess) {
             var state = this.state,
                 events = [
                     'mouseover', 'mouseout', 'mousedown', 'click', 'focus', 'blur',
-                    'keydown', 'keyup'
+                    'keydown'
                 ].join(' ');
 
             this.transcriptControlEl.on('click', this.toggle);
@@ -135,10 +136,12 @@ function (Sjson, AsyncProcess) {
 
             if (this.showLanguageMenu) {
                 this.languageChooserEl.on({
+                    keydown: this.handleKeypress
+                });
+                this.container.on({
                     mouseenter: this.onContainerMouseEnter,
                     mouseleave: this.onContainerMouseLeave,
-                    keyup: this.handleKeypress
-                });
+                })
             }
 
             state.el
@@ -171,23 +174,25 @@ function (Sjson, AsyncProcess) {
                 case KEY.ENTER:
                 case KEY.SPACE:
                 case KEY.UP:
+                    event.preventDefault();
                     if ($('.control-lang').is(':focus')) {
                         var focused = $(':focus').parent(),
                             index = this.languageChooserEl.find('li').index(focused),
                             total = this.languageChooserEl.find('li').size() - 1;
 
-                        this.previousLanguageMenuItem(index, total);
+                        this.previousLanguageMenuItem(event, index, total);
                     } else {
                         this.openLanguageMenu(event);
                     }
                     break;
                 case KEY.DOWN:
+                    event.preventDefault();
                     if ($('.control-lang').is(':focus')) {
                         var focused = $(':focus').parent(),
                             index = this.languageChooserEl.find('li').index(focused),
                             total = this.languageChooserEl.find('li').size() - 1;
 
-                        this.nextLanguageMenuItem(index, total);
+                        this.nextLanguageMenuItem(event, index, total);
                     } else {
                         this.openLanguageMenu(event);
                     }
@@ -200,7 +205,9 @@ function (Sjson, AsyncProcess) {
             return event.keyCode === KEY.TAB;
         },
 
-        nextLanguageMenuItem: function(index, total) {
+        nextLanguageMenuItem: function(event, index, total) {
+            event.preventDefault();
+
             if (event.altKey) {
                 return true;
             }
@@ -224,7 +231,9 @@ function (Sjson, AsyncProcess) {
             return false;
         },
 
-        previousLanguageMenuItem: function(index, total) {
+        previousLanguageMenuItem: function(event, index, total) {
+            event.preventDefault();
+
             if (event.altKey) {
                 return true;
             }
@@ -249,6 +258,8 @@ function (Sjson, AsyncProcess) {
         },
 
         openLanguageMenu: function(event) {
+            event.preventDefault();
+
             var button = this.languageChooserEl,
                 menu = button.parent().find('.menu');
 
@@ -262,6 +273,8 @@ function (Sjson, AsyncProcess) {
         },
 
         closeLanguageMenu: function(event) {
+            event.preventDefault();
+
             var button = this.languageChooserEl;
 
             this.state.el.trigger('language_menu:hide');
@@ -302,7 +315,7 @@ function (Sjson, AsyncProcess) {
         */
         onContainerMouseEnter: function (event) {
             event.preventDefault();
-            $(event.currentTarget).addClass('is-opened');
+            $(event.currentTarget).find('.lang').addClass('is-opened');
             this.state.el.trigger('language_menu:show');
         },
 
@@ -313,7 +326,7 @@ function (Sjson, AsyncProcess) {
         */
         onContainerMouseLeave: function (event) {
             event.preventDefault();
-            $(event.currentTarget).removeClass('is-opened');
+            $(event.currentTarget).find('.lang').removeClass('is-opened');
             this.state.el.trigger('language_menu:hide');
         },
 
@@ -491,7 +504,6 @@ function (Sjson, AsyncProcess) {
                         self.fetchCaption(true);
                     } else {
                         self.hideCaptions(true, false);
-                        // self.languageChooserEl.hide();
                     }
                 }
             });
@@ -529,7 +541,6 @@ function (Sjson, AsyncProcess) {
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     self.hideCaptions(true, false);
-                    // self.transcriptControlEl.hide();
                 }
             });
 
@@ -566,6 +577,8 @@ function (Sjson, AsyncProcess) {
                 currentLang = state.getCurrentLanguage();
 
             if (_.keys(languages).length < 2) {
+                // Remove the menu toggle button
+                self.container.find('.lang').remove();
                 return false;
             }
 

@@ -32,6 +32,10 @@ html:not('.afontgarde') .icon-fallback-img {
     background: url('#{$static-path}/images/fontawesome/caret-right.svg') center center no-repeat;
   }
 
+  .fa-caret-left {
+    background: url('#{$static-path}/images/fontawesome/caret-left.svg') center center no-repeat;
+  }
+
   .fa-caret-up {
     background: url('#{$static-path}/images/fontawesome/caret-up.svg') center center no-repeat;
   }
@@ -511,7 +515,9 @@ html:not('.afontgarde') .icon-fallback-img {
         }
 
         .speeds,
-        .lang {
+        .lang,
+        .grouped-controls {
+          display: inline-block;
 
           .control {
 
@@ -520,6 +526,9 @@ html:not('.afontgarde') .icon-fallback-img {
               @include transform-origin(center center);
             }
           }
+        }
+
+        .speeds {
 
           &.is-opened {
 
@@ -530,12 +539,6 @@ html:not('.afontgarde') .icon-fallback-img {
               }
             }
           }
-        }
-
-        .speeds,
-        .lang,
-        .grouped-controls {
-          display: inline-block;
 
           .speed-button {
 
@@ -556,6 +559,24 @@ html:not('.afontgarde') .icon-fallback-img {
 
               @media (max-width: 1120px) {
                 padding: 0 lh(0.5);
+              }
+            }
+          }
+        }
+
+        .lang {
+
+          .language-menu {
+            width: $baseline;
+            padding: ($baseline / 2) 0;
+          }
+
+          &.is-opened {
+
+            .control {
+
+              .icon {
+                @include transform(rotate(90deg));
               }
             }
           }
