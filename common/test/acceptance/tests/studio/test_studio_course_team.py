@@ -9,8 +9,11 @@ from ...pages.studio.auto_auth import AutoAuthPage
 from ...pages.studio.users import CourseTeamPage
 from ...pages.studio.index import DashboardPage
 
+from flaky import flaky
+
 
 @attr('shard_2')
+@flaky(max_runs=30, min_passes=30)
 class CourseTeamPageTest(StudioCourseTest):
     """ As a course author, I want to be able to add others to my team """
     def _make_user(self, username):
